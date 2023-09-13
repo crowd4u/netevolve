@@ -40,16 +40,21 @@ attrs = []
 def execute_data() -> None:
     np_alpha = []
     np_beta = []
+    np_gamma = []
+    np_delta = []
 
     with open("model.param.data.fast", "r") as f:
         lines = f.readlines()
         for index, line in enumerate(
             tqdm(lines, desc="load data", postfix="range", ncols=80)
         ):
-            datas = line[:-1].split(",")
-            np_alpha.append(np.float32(datas[0]))
-            np_beta.append(np.float32(datas[1]))
+            datus = line[:-1].split(",")
+            np_alpha.append(np.float32(datus[0]))
+            np_beta.append(np.float32(datus[1]))
+            np_gamma.append(np.float32(datus[2]))
+            np_delta.append(np.float32(datus[3]))
 
+    # Define parameters of policy function
     T = np.array(
         [1.0 for i in range(len(np_alpha))],
         dtype=np.float32,
@@ -58,6 +63,21 @@ def execute_data() -> None:
         [1.0 for i in range(len(np_beta))],
         dtype=np.float32,
     )
+
+    r = np.array(
+        [1.0 for i in range(len(np_alpha))],
+        dtype=np.float32,
+    )
+    w = np.array(
+        [1e-2 for i in range(len(np_alpha))],
+        dtype=np.float32,
+    )
+    m = np.array(
+        [1e-8 for i in range(len(np_alpha))],
+        dtype=np.float32,
+    )
+
+    # Define parameters of reward Function
     alpha = torch.from_numpy(
         np.array(
             np_alpha,
@@ -72,18 +92,19 @@ def execute_data() -> None:
         ),
     ).to(device)
 
-    r = np.array(
-        [1.0 for i in range(len(np_alpha))],
-        dtype=np.float32,
-    )
-    w = np.array(
-        [1e-2 for i in range(len(np_alpha))],
-        dtype=np.float32,
-    )
-    m = np.array(
-        [1e-8 for i in range(len(np_alpha))],
-        dtype=np.float32,
-    )
+    gamma = torch.form_numpy(
+        np.array(
+            np_gamma,
+            dtype=np.float32,
+        ),
+    ).to(device)
+
+    delta = torch.from_numpy(
+        np.array(
+            np_delta,
+            dtype=np.float32,
+        )
+    ).to(device)
 
     agent_policy = AgentPolicy(r=r, W=w, T=T, e=e, m=m)
     agent_optimizer = optim.Adadelta(agent_policy.parameters(), lr=lr)
