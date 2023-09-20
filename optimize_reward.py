@@ -40,7 +40,7 @@ class Optimizer:
         self.model = model
         self.size = size
 
-        self.optimizer = optim.SGD(self.model.parameters(), lr=0.01)
+        self.optimizer = optim.SGD(self.model.parameters(), lr=0.05)
         return
 
     def optimize(self, t: int):
@@ -59,7 +59,12 @@ class Optimizer:
 
         if t > 0:
             reward += (
-                torch.sum(torch.abs(self.feats[t] - self.feats[t - 1]))
+                torch.sum(
+                    torch.softmax(
+                        torch.abs(self.feats[t] - self.feats[t - 1]), dim=1
+                    ),
+                    dim=1,
+                )
                 * self.model.gamma
             )
 
