@@ -79,14 +79,15 @@ class Optimizer:
             max_alpha = 1.0
             max_beta = 1.0
             max_gamma = 1.0
-            max_delta = 1.0
+            # max_delta = 1.0
 
             for i in range(self.size):
                 f.write(
-                    "{},{},{}\n".format(
+                    "{},{},{},{}\n".format(
                         self.model.alpha[i].item() / max_alpha,
                         self.model.beta[i].item() / max_beta,
                         self.model.gamma[i].item() / max_gamma,
+                        1.0,
                     )
                 )
 

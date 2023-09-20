@@ -92,7 +92,7 @@ def execute_data() -> None:
         ),
     ).to(device)
 
-    gamma = torch.form_numpy(
+    gamma = torch.from_numpy(
         np.array(
             np_gamma,
             dtype=np.float32,
@@ -123,6 +123,7 @@ def execute_data() -> None:
         temper=T,
         alpha=alpha,
         beta=beta,
+        gamma=gamma,
     )
     memory = []
     for episode in tqdm(

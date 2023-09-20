@@ -33,9 +33,9 @@ class AgentPolicy(nn.Module):
         self.W = nn.Parameter(
             torch.tensor(W).float().view(-1, 1).to(device), requires_grad=True
         )
-        self.m = nn.Parameter(
-            torch.tensor(m).float().view(-1, 1).to(device), requires_grad=True
-        )
+        # self.m = nn.Parameter(
+        #     torch.tensor(m).float().view(-1, 1).to(device), requires_grad=True
+        # )
 
     def forward(
         self, attributes, edges, N
