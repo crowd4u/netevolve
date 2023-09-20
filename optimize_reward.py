@@ -28,7 +28,7 @@ class Model(nn.Module):
         self.alpha = nn.Parameter(alpha, requires_grad=True).to(device)
         self.beta = nn.Parameter(beta, requires_grad=True).to(device)
         self.gamma = nn.Parameter(gamma, requires_grad=True).to(device)
-        self.delta = nn.Parameter(delta, requires_grad=True).to(device)
+        # self.delta = nn.Parameter(delta, requires_grad=True).to(device)
 
         return
 
@@ -56,6 +56,13 @@ class Optimizer:
         costs = torch.add(costs, 0.001)
 
         reward = torch.sub(sim, costs)
+
+        if t > 0:
+            reward += (
+                torch.sum(torch.abs(self.feats[t] - self.feats[t - 1]))
+                * self.model.gamma
+            )
+
         loss = -reward.sum()
 
         loss.backward()
@@ -71,11 +78,10 @@ class Optimizer:
 
             for i in range(self.size):
                 f.write(
-                    "{},{}\n".format(
+                    "{},{},{}\n".format(
                         self.model.alpha[i].item() / max_alpha,
                         self.model.beta[i].item() / max_beta,
                         self.model.gamma[i].item() / max_gamma,
-                        self.model.delta[i].item() / max_delta,
                     )
                 )
 
