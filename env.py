@@ -38,8 +38,8 @@ class Env:
 
     def future_step(self, edges, attributes):
         # 特徴量の正規化
-        norm = self.feature.norm(dim=1)[:, None] + 1e-8
-        attributes = attributes.div(norm)
+        # norm = attributes.norm(dim=1)[:, None] + 1e-8
+        # attributes = attributes.div(norm)
         reward = (
             torch.sum(
                 torch.softmax(torch.abs(attributes - self.feature), dim=1),
@@ -48,13 +48,19 @@ class Env:
             * self.gamma
         )
         self.feature = attributes
+        # 特徴量の正規化
+        norm = self.feature.norm(dim=1)[:, None] + 1e-8
+        self.feature = self.feature.div(norm)
         self.feature_t = self.feature.t()
         next_mat = edges.bernoulli()
         dot_product = torch.mm(self.feature, self.feature_t)
-        reward = reward.sum(next_mat.mul(dot_product).mul(self.alpha))
+        reward = reward.add(next_mat.mul(dot_product).mul(self.alpha))
+        # reward = next_mat.mul(dot_product).mul(self.alpha)
         costs = next_mat.mul(self.beta)
         reward = reward.sub(costs)
-        reward = reward.sum()
+        # reward = reward.sum()
+        self.edges = next_mat
+        
         return reward.sum()
 
     def step(self, actions):
@@ -63,7 +69,9 @@ class Env:
         reward = next_mat.mul(dot_product).mul(self.alpha)
         costs = next_mat.mul(self.beta)
         reward = reward.sub(costs)
-        reward = reward.sum()
+        # reward = reward.sum()
+        self.edges = next_mat
+        
         return reward.sum()
 
     def update_attributes(self, attributes):
@@ -71,7 +79,6 @@ class Env:
         # 特徴量の正規化
         norm = self.feature.norm(dim=1)[:, None] + 1e-8
         self.feature = self.feature.div(norm)
-
         self.feature_t = self.feature.t()
 
     def state(self):

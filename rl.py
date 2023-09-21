@@ -32,7 +32,7 @@ LEARNED_TIME = 4
 GENERATE_TIME = 5
 TOTAL_TIME = 10
 
-lr = 0.0005
+lr = 0.001
 p_gamma = 0.8
 attrs = []
 
@@ -63,19 +63,30 @@ def execute_data() -> None:
         [1.0 for i in range(len(np_beta))],
         dtype=np.float32,
     )
-
     r = np.array(
         [1.0 for i in range(len(np_alpha))],
         dtype=np.float32,
     )
     w = np.array(
-        [1e-2 for i in range(len(np_alpha))],
+        [1e-0 for i in range(len(np_alpha))],
         dtype=np.float32,
     )
     m = np.array(
-        [1e-8 for i in range(len(np_alpha))],
+        [1e-2 for i in range(len(np_alpha))],
         dtype=np.float32,
     )
+    # r = np.array(
+    #     [1.0 for i in range(len(np_alpha))],
+    #     dtype=np.float32,
+    # )
+    # w = np.array(
+    #     [1e-2 for i in range(len(np_alpha))],
+    #     dtype=np.float32,
+    # )
+    # m = np.array(
+    #     [1e-8 for i in range(len(np_alpha))],
+    #     dtype=np.float32,
+    # )
 
     # Define parameters of reward Function
     alpha = torch.from_numpy(
@@ -110,7 +121,7 @@ def execute_data() -> None:
     agent_optimizer = optim.Adadelta(agent_policy.parameters(), lr=lr)
 
     N = len(np_alpha)
-    del np_alpha, np_beta
+    del np_alpha, np_beta, np_gamma, np_delta
 
     """_summary_
     setup data
@@ -147,8 +158,11 @@ def execute_data() -> None:
                 edges=neighbor_state, attributes=feat, N=N
             )
 
-            field.update_attributes(predict_feat.detach())
-            reward = field.step(action_probs.detach().clone())
+            # field.update_attributes(predict_feat.detach())
+            # reward = field.step(action_probs.detach().clone())
+            reward = field.future_step(
+                action_probs.detach().clone(), predict_feat.detach()
+            )
 
             total_reward += reward
 
@@ -189,8 +203,10 @@ def execute_data() -> None:
             )
             del neighbor_state, feat
 
-            field.update_attributes(predict_feat)
-            reward = field.step(action_probs)
+            # field.update_attributes(predict_feat)
+            # reward = field.step(action_probs)
+            # reward = field.future_step(action_probs, predict_feat)
+            reward = field.future_step(action_probs, predict_feat)
 
             target_prob = torch.ravel(predict_feat).to("cpu")
             del attr_probs
