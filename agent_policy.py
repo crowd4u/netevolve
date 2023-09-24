@@ -42,7 +42,7 @@ class AgentPolicy(nn.Module):
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         edges = (edges > 0).float().to(device)
 
-        tmp_tensor = (self.W / (N * N)) * torch.matmul(edges, attributes)
+        tmp_tensor = self.W * torch.matmul(edges, attributes)
         # # 各列の最小値 (dim=0 は列方向)
         # min_values = torch.min(tmp_tensor, dim=0).values
         # # 各列の最大値 (dim=0 は列方向)

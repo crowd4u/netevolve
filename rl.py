@@ -32,7 +32,7 @@ LEARNED_TIME = 4
 GENERATE_TIME = 5
 TOTAL_TIME = 10
 
-lr = 0.001
+lr = 0.1
 p_gamma = 0.8
 attrs = []
 
