@@ -33,7 +33,7 @@ GENERATE_TIME = 5
 TOTAL_TIME = 10
 
 lr = 0.1
-p_gamma = 0.8
+p_gamma = 0.9
 attrs = []
 
 
