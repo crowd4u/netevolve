@@ -40,7 +40,7 @@ class Optimizer:
         self.model = model
         self.size = size
 
-        self.optimizer = optim.SGD(self.model.parameters(), lr=0.1)
+        self.optimizer = optim.SGD(self.model.parameters(), lr=0.01)
         return
 
     def optimize(self, t: int):
