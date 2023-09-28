@@ -32,7 +32,7 @@ LEARNED_TIME = 4
 GENERATE_TIME = 5
 TOTAL_TIME = 10
 
-lr = 0.0005
+lr = 0.1
 p_gamma = 0.8
 attrs = []
 
@@ -282,10 +282,10 @@ def execute_data() -> None:
                 calc_nll_log[count][t] = error_edge.item()
         print("---")
 
-    np.save("proposed_edge_auc2", calc_log)
-    np.save("proposed_edge_nll2", calc_nll_log)
-    np.save("proposed_attr_auc2", attr_calc_log)
-    np.save("proposed_attr_nll2", attr_calc_nll_log)
+    np.save("proposed_edge_dblp_auc", calc_log)
+    np.save("proposed_edge_dblp_nll", calc_nll_log)
+    np.save("proposed_attr_dblp_auc", attr_calc_log)
+    np.save("proposed_attr_dblp_nll", attr_calc_nll_log)
 
 
 if __name__ == "__main__":

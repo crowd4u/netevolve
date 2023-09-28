@@ -72,7 +72,7 @@ class AgentPolicy(nn.Module):
         # Compute similarity
         x = torch.mm(feat, feat.t())
         # print(feat)
-        x = torch.sigmoid(x.div(self.T).exp().mul(self.e))
+        x = torch.tanh(x.div(self.T).exp().mul(self.e))
         # print("prob", x)
 
         return x, feat, feat_prob
