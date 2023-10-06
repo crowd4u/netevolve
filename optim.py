@@ -216,7 +216,7 @@ def execute_data(trial) -> float:
             #     torch.from_numpy(attr_numpy),
             # )
             auc_actv = roc_auc_score(attr_numpy, attr_predict_probs)
-            attr_auc += auc_actv
+            attr_auc += auc_actv/ (TOTAL_TIME - GENERATE_TIME)
             attr_auc_log.append(auc_actv)
         except ValueError as ve:
             print(ve)
@@ -253,7 +253,7 @@ def execute_data(trial) -> float:
             #     torch.from_numpy(edge_numpy),
             # )
             auc_actv = roc_auc_score(edge_numpy, edge_predict_probs)
-            edge_auc += auc_actv
+            edge_auc += auc_actv / (TOTAL_TIME - GENERATE_TIME)
             edge_auc_log.append(auc_actv)
         except ValueError as ve:
             print(ve)
