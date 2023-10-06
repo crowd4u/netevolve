@@ -55,6 +55,9 @@ scipy = "^1.8.1"
 torchviz = "^0.0.2"
 tqdm = "^4.64.1"
 torch = "^2.0.1"
+optuna = "^3.3.0"
+torchvision = "^0.16.0"
+torchaudio = "^2.1.0"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.6.0"
