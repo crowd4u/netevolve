@@ -33,16 +33,16 @@ class AgentPolicy(nn.Module):
         self.W = nn.Parameter(
             torch.tensor(W).float().view(-1, 1).to(device), requires_grad=True
         )
-        self.m = nn.Parameter(
-            torch.tensor(m).float().view(-1, 1).to(device), requires_grad=True
-        )
+        # self.m = nn.Parameter(
+        #     torch.tensor(m).float().view(-1, 1).to(device), requires_grad=True
+        # )
 
     def forward(
         self, attributes, edges, N
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         edges = (edges > 0).float().to(device)
 
-        tmp_tensor = (self.W / (N * N)) * torch.matmul(edges, attributes)
+        tmp_tensor = self.W * torch.matmul(edges, attributes)
         # # 各列の最小値 (dim=0 は列方向)
         # min_values = torch.min(tmp_tensor, dim=0).values
         # # 各列の最大値 (dim=0 は列方向)
@@ -72,7 +72,7 @@ class AgentPolicy(nn.Module):
         # Compute similarity
         x = torch.mm(feat, feat.t())
         # print(feat)
-        x = torch.sigmoid(x.div(self.T).exp().mul(self.e))
+        x = torch.tanh(x.div(self.T).exp().mul(self.e))
         # print("prob", x)
 
         return x, feat, feat_prob

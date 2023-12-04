@@ -18,6 +18,7 @@ Our checked platforms are:
 [Optional]
 
 - CUDA 12.X (using NVIDIA GPU)
+- NCCL2 required
 
 ## how to run
 
@@ -39,3 +40,11 @@ poetry run python optimize_reward.py
 poetry run python rl.py
 ```
 
+```
+Network Installer for Ubuntu22.04
+
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb
+sudo dpkg -i cuda-keyring_1.0-1_all.deb
+sudo apt update
+sudo apt install libnccl2 libnccl-dev
+```

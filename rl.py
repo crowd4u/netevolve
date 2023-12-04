@@ -32,24 +32,31 @@ LEARNED_TIME = 4
 GENERATE_TIME = 5
 TOTAL_TIME = 10
 
-lr = 0.0005
-p_gamma = 0.8
+# lr = 0.1
+# p_gamma = 0.8
+lr = 4.414072937107742e-06
+p_gamma = 0.38100283002040913
 attrs = []
 
 
 def execute_data() -> None:
     np_alpha = []
     np_beta = []
+    np_gamma = []
+    np_delta = []
 
     with open("model.param.data.fast", "r") as f:
         lines = f.readlines()
         for index, line in enumerate(
             tqdm(lines, desc="load data", postfix="range", ncols=80)
         ):
-            datas = line[:-1].split(",")
-            np_alpha.append(np.float32(datas[0]))
-            np_beta.append(np.float32(datas[1]))
+            datus = line[:-1].split(",")
+            np_alpha.append(np.float32(datus[0]))
+            np_beta.append(np.float32(datus[1]))
+            np_gamma.append(np.float32(datus[2]))
+            np_delta.append(np.float32(datus[3]))
 
+    # Define parameters of policy function
     T = np.array(
         [1.0 for i in range(len(np_alpha))],
         dtype=np.float32,
@@ -58,6 +65,32 @@ def execute_data() -> None:
         [1.0 for i in range(len(np_beta))],
         dtype=np.float32,
     )
+    r = np.array(
+        [1.0 for i in range(len(np_alpha))],
+        dtype=np.float32,
+    )
+    w = np.array(
+        [1e-0 for i in range(len(np_alpha))],
+        dtype=np.float32,
+    )
+    m = np.array(
+        [1e-2 for i in range(len(np_alpha))],
+        dtype=np.float32,
+    )
+    # r = np.array(
+    #     [1.0 for i in range(len(np_alpha))],
+    #     dtype=np.float32,
+    # )
+    # w = np.array(
+    #     [1e-2 for i in range(len(np_alpha))],
+    #     dtype=np.float32,
+    # )
+    # m = np.array(
+    #     [1e-8 for i in range(len(np_alpha))],
+    #     dtype=np.float32,
+    # )
+
+    # Define parameters of reward Function
     alpha = torch.from_numpy(
         np.array(
             np_alpha,
@@ -72,24 +105,25 @@ def execute_data() -> None:
         ),
     ).to(device)
 
-    r = np.array(
-        [1.0 for i in range(len(np_alpha))],
-        dtype=np.float32,
-    )
-    w = np.array(
-        [1e-2 for i in range(len(np_alpha))],
-        dtype=np.float32,
-    )
-    m = np.array(
-        [1e-8 for i in range(len(np_alpha))],
-        dtype=np.float32,
-    )
+    gamma = torch.from_numpy(
+        np.array(
+            np_gamma,
+            dtype=np.float32,
+        ),
+    ).to(device)
+
+    delta = torch.from_numpy(
+        np.array(
+            np_delta,
+            dtype=np.float32,
+        )
+    ).to(device)
 
     agent_policy = AgentPolicy(r=r, W=w, T=T, e=e, m=m)
     agent_optimizer = optim.Adadelta(agent_policy.parameters(), lr=lr)
 
     N = len(np_alpha)
-    del np_alpha, np_beta
+    del np_alpha, np_beta, np_gamma, np_delta
 
     """_summary_
     setup data
@@ -102,6 +136,7 @@ def execute_data() -> None:
         temper=T,
         alpha=alpha,
         beta=beta,
+        gamma=gamma,
     )
     memory = []
     for episode in tqdm(
@@ -125,8 +160,11 @@ def execute_data() -> None:
                 edges=neighbor_state, attributes=feat, N=N
             )
 
-            field.update_attributes(predict_feat.detach())
-            reward = field.step(action_probs.detach().clone())
+            # field.update_attributes(predict_feat.detach())
+            # reward = field.step(action_probs.detach().clone())
+            reward = field.future_step(
+                action_probs.detach().clone(), predict_feat.detach()
+            )
 
             total_reward += reward
 
@@ -167,8 +205,10 @@ def execute_data() -> None:
             )
             del neighbor_state, feat
 
-            field.update_attributes(predict_feat)
-            reward = field.step(action_probs)
+            # field.update_attributes(predict_feat)
+            # reward = field.step(action_probs)
+            # reward = field.future_step(action_probs, predict_feat)
+            reward = field.future_step(action_probs, predict_feat)
 
             target_prob = torch.ravel(predict_feat).to("cpu")
             del attr_probs
@@ -244,10 +284,10 @@ def execute_data() -> None:
                 calc_nll_log[count][t] = error_edge.item()
         print("---")
 
-    np.save("proposed_edge_auc", calc_log)
-    np.save("proposed_edge_nll", calc_nll_log)
-    np.save("proposed_attr_auc", attr_calc_log)
-    np.save("proposed_attr_nll", attr_calc_nll_log)
+    np.save("proposed_edge_dblp_auc", calc_log)
+    np.save("proposed_edge_dblp_nll", calc_nll_log)
+    np.save("proposed_attr_dblp_auc", attr_calc_log)
+    np.save("proposed_attr_dblp_nll", attr_calc_nll_log)
 
 
 if __name__ == "__main__":

@@ -22,11 +22,14 @@ class Interest(IntEnum):
 
 
 class Model(nn.Module):
-    def __init__(self, alpha, beta):
+    def __init__(self, alpha, beta, gamma, delta):
         super().__init__()
 
         self.alpha = nn.Parameter(alpha, requires_grad=True).to(device)
         self.beta = nn.Parameter(beta, requires_grad=True).to(device)
+        self.gamma = nn.Parameter(gamma, requires_grad=True).to(device)
+        # self.delta = nn.Parameter(delta, requires_grad=True).to(device)
+
         return
 
 
@@ -37,7 +40,7 @@ class Optimizer:
         self.model = model
         self.size = size
 
-        self.optimizer = optim.SGD(self.model.parameters(), lr=0.01)
+        self.optimizer = optim.SGD(self.model.parameters(), lr=0.001)
         return
 
     def optimize(self, t: int):
@@ -53,6 +56,18 @@ class Optimizer:
         costs = torch.add(costs, 0.001)
 
         reward = torch.sub(sim, costs)
+
+        if t > 0:
+            reward += (
+                torch.sum(
+                    torch.softmax(
+                        torch.abs(self.feats[t] - self.feats[t - 1]), dim=1
+                    ),
+                    dim=1,
+                )
+                * self.model.gamma
+            )
+
         loss = -reward.sum()
 
         loss.backward()
@@ -63,12 +78,16 @@ class Optimizer:
         with open("model.param.data.fast", "w") as f:
             max_alpha = 1.0
             max_beta = 1.0
+            max_gamma = 1.0
+            # max_delta = 1.0
 
             for i in range(self.size):
                 f.write(
-                    "{},{}\n".format(
+                    "{},{},{},{}\n".format(
                         self.model.alpha[i].item() / max_alpha,
                         self.model.beta[i].item() / max_beta,
+                        self.model.gamma[i].item() / max_gamma,
+                        1.0,
                     )
                 )
 
@@ -94,7 +113,20 @@ if __name__ == "__main__":
             dtype=np.float32,
         ),
     ).to(device)
-    model = Model(alpha, beta)
+    gamma = torch.from_numpy(
+        np.array(
+            [1.0 for i in range(data_size)],
+            dtype=np.float32,
+        ),
+    ).to(device)
+
+    delta = torch.from_numpy(
+        np.array(
+            [1.0 for i in range(data_size)],
+            dtype=np.float32,
+        ),
+    ).to(device)
+    model = Model(alpha, beta, gamma, delta)
     optimizer = Optimizer(data.adj, data.feature, model, data_size)
     for t in range(5):
         optimizer.optimize(t)
